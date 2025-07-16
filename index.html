@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Meri’s To-Do’s</title>
+  <title>Meri's Daily Dashboard</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -73,11 +72,11 @@
       justify-content: space-between;
       align-items: center;
     }
-    li span {
-      flex-grow: 1;
-      text-align: left;
-      margin-left: 10px;
-      word-break: break-word;
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
     }
     .remove-btn {
       background: red;
@@ -109,6 +108,11 @@
       background-color: white;
       border-radius: 5px;
     }
+    .clock-time {
+      text-align: center;
+      font-weight: bold;
+      margin: 10px 0;
+    }
   </style>
 </head>
 <body>
@@ -121,20 +125,23 @@
   </div>
   <div class="content">
     <div id="currentDate"></div>
+
     <div id="todo" class="todo-container">
-      <h1>Meri’s To-Do’s</h1>
+      <h1>To-Do List</h1>
       <input type="text" id="taskInput" placeholder="Add task...">
       <button onclick="addTask()">Add</button>
       <div id="todoAccordion"></div>
     </div>
+
     <div id="timelog" class="todo-container hidden">
       <h1>Clock-In / Clock-Out</h1>
-      <div id="liveTime"></div>
+      <div class="clock-time" id="liveTime"></div>
       <input type="text" id="activityInput" placeholder="What are you working on?">
       <button onclick="clockIn()">🟢 Clock In</button>
       <button onclick="clockOut()">🔴 Clock Out</button>
       <div id="timelogAccordion"></div>
     </div>
+
     <div id="social" class="todo-container hidden">
       <h1>Social Media Tracker</h1>
       <input type="text" id="socialReason" placeholder="Why are you opening it?">
@@ -143,11 +150,13 @@
       <button onclick="logSocial('YouTube')">YouTube</button>
       <div id="socialAccordion"></div>
     </div>
+
     <div id="hair" class="todo-container hidden">
       <h1>Hair Playing Tracker</h1>
       <button onclick="logHair()">😬 I played with my hair</button>
       <div id="hairAccordion"></div>
     </div>
+
     <div id="sleep" class="todo-container hidden">
       <h1>Sleep Tracker</h1>
       <input type="date" id="sleepDate" />
@@ -157,9 +166,16 @@
       <div id="sleepAccordion"></div>
     </div>
   </div>
+
   <script>
     const getToday = () => new Date().toISOString().split("T")[0];
     document.getElementById("currentDate").textContent = `📅 ${new Date().toLocaleDateString()}`;
+
+    function updateLiveTime() {
+      const now = new Date();
+      document.getElementById("liveTime").textContent = now.toLocaleTimeString();
+    }
+    setInterval(updateLiveTime, 1000);
 
     function switchTab(id) {
       document.querySelectorAll('.todo-container').forEach(d => d.classList.add('hidden'));
@@ -167,11 +183,6 @@
       document.getElementById(id).classList.remove('hidden');
       document.querySelector(`.tab[onclick="switchTab('${id}')"]`).classList.add('active');
     }
-
-    function updateLiveTime() {
-      document.getElementById('liveTime').textContent = `🕒 ${new Date().toLocaleTimeString()}`;
-    }
-    setInterval(updateLiveTime, 1000);
 
     function addToAccordion(containerId, date, text, isCheckbox = false) {
       const container = document.getElementById(containerId);
@@ -190,21 +201,24 @@
         container.appendChild(panel);
         section = panel;
       }
+
       const entry = document.createElement("li");
       if (isCheckbox) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "task-item";
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
         const label = document.createElement("span");
         label.textContent = text;
+        label.style.textAlign = "left";
         checkbox.onchange = () => {
           label.style.textDecoration = checkbox.checked ? "line-through" : "none";
         };
-        entry.appendChild(checkbox);
-        entry.appendChild(label);
+        wrapper.appendChild(checkbox);
+        wrapper.appendChild(label);
+        entry.appendChild(wrapper);
       } else {
-        const label = document.createElement("span");
-        label.textContent = text;
-        entry.appendChild(label);
+        entry.textContent = text;
       }
       const del = document.createElement("button");
       del.textContent = "🗑️";
