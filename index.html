@@ -11,47 +11,39 @@
       margin: 0;
       padding: 0;
     }
-
     .tabs {
       display: flex;
       justify-content: center;
       background-color: #007bff;
       flex-wrap: wrap;
     }
-
     .tab {
       padding: 15px 20px;
       color: white;
       cursor: pointer;
     }
-
     .tab.active {
       background-color: #0056b3;
     }
-
     .content {
       padding: 30px;
       max-width: 700px;
       margin: auto;
     }
-
     h1 {
       text-align: center;
     }
-
     #currentDate {
       text-align: center;
       font-weight: bold;
       margin-bottom: 20px;
     }
-
     .todo-container {
       background: white;
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-
     input[type="text"], input[type="time"], input[type="date"], input[type="number"] {
       width: 100%;
       padding: 10px;
@@ -60,7 +52,6 @@
       border: 1px solid #ccc;
       border-radius: 5px;
     }
-
     button {
       padding: 10px 15px;
       background: #007bff;
@@ -70,13 +61,11 @@
       cursor: pointer;
       margin-top: 5px;
     }
-
     ul {
       list-style-type: none;
       padding-left: 0;
       margin-top: 15px;
     }
-
     li {
       background: #eee;
       padding: 10px;
@@ -86,23 +75,19 @@
       justify-content: space-between;
       align-items: center;
     }
-
     .task-group {
       display: flex;
       align-items: center;
       gap: 10px;
       flex-grow: 1;
     }
-
     .completed .task-text {
       text-decoration: line-through;
       color: gray;
     }
-
     .task-text {
       font-size: 16px;
     }
-
     .remove-btn {
       background: red;
       color: white;
@@ -111,22 +96,40 @@
       border-radius: 4px;
       cursor: pointer;
     }
-
     input[type="checkbox"] {
       transform: scale(1.2);
     }
-
     .hidden {
       display: none;
     }
-
     .log-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 10px;
     }
+    summary {
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 10px;
+    }
   </style>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBnXWDkKRsbjvdgMlSrbgJvssu9N-LUDuA",
+      authDomain: "dailydashboard-64139.firebaseapp.com",
+      databaseURL: "https://dailydashboard-64139-default-rtdb.firebaseio.com",
+      projectId: "dailydashboard-64139",
+      storageBucket: "dailydashboard-64139.firebasestorage.app",
+      messagingSenderId: "420557412452",
+      appId: "1:420557412452:web:8ee806a83543b2b1776771"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+  </script>
 </head>
 <body>
   <div class="tabs">
@@ -136,199 +139,96 @@
     <div class="tab" onclick="switchTab('hair')">💇 Hair Tracker</div>
     <div class="tab" onclick="switchTab('sleep')">💤 Sleep Tracker</div>
   </div>
-
   <div class="content">
     <div id="currentDate"></div>
-
-    <!-- TO-DO -->
     <div id="todo" class="todo-container">
       <h1>To-Do List</h1>
       <input type="text" id="taskInput" placeholder="Write your task..." />
       <button onclick="addTask()">Add</button>
-      <ul id="taskList"></ul>
-    </div>
-
-    <!-- TIME LOG -->
-    <div id="timelog" class="todo-container hidden">
-      <h1>Clock-In / Clock-Out</h1>
-      <div style="text-align:center; margin-bottom:10px;">🕒 Current Time: <span id="liveClock"></span></div>
-      <input type="text" id="activityName" placeholder="What are you working on?" />
-      <button onclick="clockIn()" id="clockInBtn">🟢 Clock In</button>
-      <button onclick="clockOut()" id="clockOutBtn" disabled>🔴 Clock Out</button>
-      <ul id="logList"></ul>
-    </div>
-
-    <!-- SOCIAL TRACKER -->
-    <div id="social" class="todo-container hidden">
-      <h1>Social Media Tracker</h1>
-      <p style="color: red; font-weight: bold;">⚠️ You are ruining your future if you scroll. Only post or learn!</p>
-      <input type="text" id="socialReason" placeholder="Why are you opening it? (Posting? Studying?)">
-      <button onclick="logSocial('TikTok')">TikTok</button>
-      <button onclick="logSocial('Instagram')">Instagram</button>
-      <button onclick="logSocial('YouTube')">YouTube</button>
-      <ul id="socialList"></ul>
-    </div>
-
-    <!-- HAIR TRACKER -->
-    <div id="hair" class="todo-container hidden">
-      <h1>Hair Playing Tracker</h1>
-      <button onclick="logHair()">😬 I played with my hair</button>
-      <ul id="hairList"></ul>
-    </div>
-
-    <!-- SLEEP TRACKER -->
-    <div id="sleep" class="todo-container hidden">
-      <h1>Sleep Tracker</h1>
-      <input type="date" id="sleepDate" />
-      <input type="time" id="sleepTime" placeholder="Sleep Time" />
-      <input type="number" id="sleepHours" placeholder="Hours Slept" min="0" step="0.1" />
-      <button onclick="logSleep()">Log Sleep</button>
-      <ul id="sleepList"></ul>
+      <div id="dailyTaskSections"></div>
     </div>
   </div>
-
   <script>
-    const taskList = document.getElementById("taskList");
-    const logList = document.getElementById("logList");
-    const socialList = document.getElementById("socialList");
-    const hairList = document.getElementById("hairList");
-    const sleepList = document.getElementById("sleepList");
+    const taskInput = document.getElementById("taskInput");
+    const dateKey = new Date().toISOString().split("T")[0];
+    document.getElementById("currentDate").textContent = "📅 " + new Date().toLocaleDateString();
 
-    const dateEl = document.getElementById("currentDate");
-    const today = new Date();
-    dateEl.textContent = "📅 " + today.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-    function switchTab(id) {
-      document.querySelectorAll('.todo-container').forEach(div => div.classList.add('hidden'));
-      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      document.getElementById(id).classList.remove('hidden');
-      document.querySelector(`.tab[onclick="switchTab('${id}')"]`).classList.add("active");
+    async function getStoredTasks() {
+      const snapshot = await db.ref("tasks").get();
+      return snapshot.exists() ? snapshot.val() : {};
     }
 
-    // Live Clock
-    function updateClock() {
-      document.getElementById("liveClock").textContent = new Date().toLocaleTimeString();
+    function storeTasks(tasks) {
+      db.ref("tasks").set(tasks);
     }
-    setInterval(updateClock, 1000);
-    updateClock();
 
-    // TO-DO
-    function addTask(text = "", completed = false) {
-      const taskInput = document.getElementById("taskInput");
+    async function addTask(text = "", done = false, date = dateKey) {
+      const tasks = await getStoredTasks();
+      tasks[date] = tasks[date] || [];
       const taskText = text || taskInput.value.trim();
       if (!taskText) return;
-
-      const li = document.createElement("li");
-      if (completed) li.classList.add("completed");
-
-      const taskGroup = document.createElement("div");
-      taskGroup.className = "task-group";
-
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.checked = completed;
-
-      const span = document.createElement("span");
-      span.className = "task-text";
-      span.textContent = taskText;
-
-      checkbox.onchange = () => {
-        li.classList.toggle("completed");
-      };
-
-      const deleteBtn = document.createElement("button");
-      deleteBtn.textContent = "🗑️";
-      deleteBtn.className = "remove-btn";
-      deleteBtn.onclick = () => li.remove();
-
-      taskGroup.appendChild(checkbox);
-      taskGroup.appendChild(span);
-      li.appendChild(taskGroup);
-      li.appendChild(deleteBtn);
-
-      taskList.appendChild(li);
-      if (!text) taskInput.value = "";
+      tasks[date].push({ text: taskText, done });
+      storeTasks(tasks);
+      taskInput.value = "";
+      renderTasks(tasks);
     }
 
-    // TIME LOG
-    let currentClockIn = null;
-
-    function clockIn() {
-      const activity = document.getElementById("activityName").value.trim();
-      if (!activity) return alert("Please enter an activity.");
-      currentClockIn = { activity, start: new Date().toLocaleTimeString() };
-      document.getElementById("clockInBtn").disabled = true;
-      document.getElementById("clockOutBtn").disabled = false;
-      document.getElementById("activityName").disabled = true;
+    async function toggleDone(date, index) {
+      const tasks = await getStoredTasks();
+      tasks[date][index].done = !tasks[date][index].done;
+      storeTasks(tasks);
+      renderTasks(tasks);
     }
 
-    function clockOut() {
-      if (!currentClockIn) return;
-      currentClockIn.end = new Date().toLocaleTimeString();
-      const li = document.createElement("li");
-      li.className = "log-row";
-
-      const logText = document.createElement("span");
-      logText.textContent = `📝 ${currentClockIn.activity} — ${currentClockIn.start} to ${currentClockIn.end}`;
-
-      const deleteBtn = document.createElement("button");
-      deleteBtn.textContent = "🗑️";
-      deleteBtn.className = "remove-btn";
-      deleteBtn.onclick = () => li.remove();
-
-      li.appendChild(logText);
-      li.appendChild(deleteBtn);
-      logList.appendChild(li);
-
-      document.getElementById("activityName").value = "";
-      document.getElementById("activityName").disabled = false;
-      document.getElementById("clockInBtn").disabled = false;
-      document.getElementById("clockOutBtn").disabled = true;
-      currentClockIn = null;
+    async function deleteTask(date, index) {
+      const tasks = await getStoredTasks();
+      tasks[date].splice(index, 1);
+      storeTasks(tasks);
+      renderTasks(tasks);
     }
 
-    // SOCIAL MEDIA
-    function logSocial(platform) {
-      const reason = document.getElementById("socialReason").value.trim();
-      const li = document.createElement("li");
-      const now = new Date().toLocaleTimeString();
-      li.textContent = `${platform} ➜ ${now} (${reason || "⚠️ No reason"}) ➜ 1 penalty point`;
-      const del = document.createElement("button");
-      del.textContent = "🗑️";
-      del.className = "remove-btn";
-      del.onclick = () => li.remove();
-      li.appendChild(del);
-      socialList.appendChild(li);
-      document.getElementById("socialReason").value = "";
+    function renderTasks(tasksData = null) {
+      const container = document.getElementById("dailyTaskSections");
+      container.innerHTML = "";
+      const tasks = tasksData || {};
+      Object.keys(tasks).sort((a,b) => b.localeCompare(a)).forEach(date => {
+        const details = document.createElement("details");
+        if (date === dateKey) details.setAttribute("open", true);
+        const summary = document.createElement("summary");
+        summary.textContent = `Tasks for ${new Date(date).toLocaleDateString()}`;
+        const ul = document.createElement("ul");
+        tasks[date].forEach((task, i) => {
+          const li = document.createElement("li");
+          if (task.done) li.classList.add("completed");
+          const group = document.createElement("div");
+          group.className = "task-group";
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = task.done;
+          checkbox.onchange = () => toggleDone(date, i);
+          const span = document.createElement("span");
+          span.className = "task-text";
+          span.textContent = task.text;
+          const del = document.createElement("button");
+          del.textContent = "🗑️";
+          del.className = "remove-btn";
+          del.onclick = () => deleteTask(date, i);
+          group.appendChild(checkbox);
+          group.appendChild(span);
+          li.appendChild(group);
+          li.appendChild(del);
+          ul.appendChild(li);
+        });
+        details.appendChild(summary);
+        details.appendChild(ul);
+        container.appendChild(details);
+      });
     }
 
-    // HAIR TRACKER
-    function logHair() {
-      const li = document.createElement("li");
-      li.textContent = `😬 Hair played — ${new Date().toLocaleTimeString()}`;
-      const del = document.createElement("button");
-      del.textContent = "🗑️";
-      del.className = "remove-btn";
-      del.onclick = () => li.remove();
-      li.appendChild(del);
-      hairList.appendChild(li);
-    }
-
-    // SLEEP TRACKER
-    function logSleep() {
-      const date = document.getElementById("sleepDate").value;
-      const time = document.getElementById("sleepTime").value;
-      const hours = document.getElementById("sleepHours").value;
-      if (!date || !time || !hours) return alert("Please fill all fields.");
-      const li = document.createElement("li");
-      li.textContent = `🛌 ${date} — Slept at ${time}, ${hours}h`;
-      const del = document.createElement("button");
-      del.textContent = "🗑️";
-      del.className = "remove-btn";
-      del.onclick = () => li.remove();
-      li.appendChild(del);
-      sleepList.appendChild(li);
-    }
+    window.onload = async () => {
+      const tasks = await getStoredTasks();
+      renderTasks(tasks);
+    };
   </script>
 </body>
 </html>
