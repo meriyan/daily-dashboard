@@ -3,7 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Meri's Daily Dashboard</title>
+  <title>MaryV</title>
+  <link rel="manifest" href="/manifest.json" />
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js');
+      });
+    }
+  </script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -133,11 +141,11 @@
 </head>
 <body>
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('todo')">✅ To-Do List</div>
-    <div class="tab" onclick="switchTab('timelog')">⏱️ Time Log</div>
-    <div class="tab" onclick="switchTab('social')">📱 Social Tracker</div>
-    <div class="tab" onclick="switchTab('hair')">💇 Hair Tracker</div>
-    <div class="tab" onclick="switchTab('sleep')">💤 Sleep Tracker</div>
+    <div class="tab active" data-tab="todo">✅ To-Do List</div>
+    <div class="tab" data-tab="timelog">⏱️ Time Log</div>
+    <div class="tab" data-tab="social">📱 Social Tracker</div>
+    <div class="tab" data-tab="hair">💇 Hair Tracker</div>
+    <div class="tab" data-tab="sleep">💤 Sleep Tracker</div>
   </div>
   <div class="content">
     <div id="currentDate"></div>
@@ -245,9 +253,8 @@
     }
 
     function switchTab(tabName) {
-      const tabs = document.querySelectorAll(".tab");
-      tabs.forEach(tab => {
-        tab.classList.toggle("active", tab.textContent.includes(tabNameToLabel(tabName)));
+      document.querySelectorAll(".tab").forEach(tab => {
+        tab.classList.toggle("active", tab.dataset.tab === tabName);
       });
       const sections = ["todo", "timelog", "social", "hair", "sleep"];
       sections.forEach(id => {
@@ -255,21 +262,16 @@
       });
     }
 
-    function tabNameToLabel(tabName) {
-      switch(tabName) {
-        case "todo": return "To-Do";
-        case "timelog": return "Time";
-        case "social": return "Social";
-        case "hair": return "Hair";
-        case "sleep": return "Sleep";
-        default: return "";
-      }
-    }
-
     window.onload = async () => {
       const tasks = await getStoredTasks();
       renderTasks(tasks);
+      document.querySelectorAll(".tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+          switchTab(tab.dataset.tab);
+        });
+      });
     };
   </script>
 </body>
 </html>
+
