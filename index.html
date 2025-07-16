@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Meri's Daily Dashboard</title>
+  <title>Meri’s To-Do’s</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -72,6 +73,12 @@
       justify-content: space-between;
       align-items: center;
     }
+    li span {
+      flex-grow: 1;
+      text-align: left;
+      margin-left: 10px;
+      word-break: break-word;
+    }
     .remove-btn {
       background: red;
       color: white;
@@ -106,7 +113,7 @@
 </head>
 <body>
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('todo')">✅ Meri's To-Do's</div>
+    <div class="tab active" onclick="switchTab('todo')">✅ To-Do List</div>
     <div class="tab" onclick="switchTab('timelog')">⏱️ Time Log</div>
     <div class="tab" onclick="switchTab('social')">📱 Social Tracker</div>
     <div class="tab" onclick="switchTab('hair')">💇 Hair Tracker</div>
@@ -114,22 +121,20 @@
   </div>
   <div class="content">
     <div id="currentDate"></div>
-
     <div id="todo" class="todo-container">
-      <h1>To-Do List</h1>
+      <h1>Meri’s To-Do’s</h1>
       <input type="text" id="taskInput" placeholder="Add task...">
       <button onclick="addTask()">Add</button>
       <div id="todoAccordion"></div>
     </div>
-
     <div id="timelog" class="todo-container hidden">
       <h1>Clock-In / Clock-Out</h1>
+      <div id="liveTime"></div>
       <input type="text" id="activityInput" placeholder="What are you working on?">
       <button onclick="clockIn()">🟢 Clock In</button>
       <button onclick="clockOut()">🔴 Clock Out</button>
       <div id="timelogAccordion"></div>
     </div>
-
     <div id="social" class="todo-container hidden">
       <h1>Social Media Tracker</h1>
       <input type="text" id="socialReason" placeholder="Why are you opening it?">
@@ -138,13 +143,11 @@
       <button onclick="logSocial('YouTube')">YouTube</button>
       <div id="socialAccordion"></div>
     </div>
-
     <div id="hair" class="todo-container hidden">
       <h1>Hair Playing Tracker</h1>
       <button onclick="logHair()">😬 I played with my hair</button>
       <div id="hairAccordion"></div>
     </div>
-
     <div id="sleep" class="todo-container hidden">
       <h1>Sleep Tracker</h1>
       <input type="date" id="sleepDate" />
@@ -154,7 +157,6 @@
       <div id="sleepAccordion"></div>
     </div>
   </div>
-
   <script>
     const getToday = () => new Date().toISOString().split("T")[0];
     document.getElementById("currentDate").textContent = `📅 ${new Date().toLocaleDateString()}`;
@@ -165,6 +167,11 @@
       document.getElementById(id).classList.remove('hidden');
       document.querySelector(`.tab[onclick="switchTab('${id}')"]`).classList.add('active');
     }
+
+    function updateLiveTime() {
+      document.getElementById('liveTime').textContent = `🕒 ${new Date().toLocaleTimeString()}`;
+    }
+    setInterval(updateLiveTime, 1000);
 
     function addToAccordion(containerId, date, text, isCheckbox = false) {
       const container = document.getElementById(containerId);
@@ -195,7 +202,9 @@
         entry.appendChild(checkbox);
         entry.appendChild(label);
       } else {
-        entry.textContent = text;
+        const label = document.createElement("span");
+        label.textContent = text;
+        entry.appendChild(label);
       }
       const del = document.createElement("button");
       del.textContent = "🗑️";
