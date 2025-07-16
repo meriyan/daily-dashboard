@@ -1,470 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Productivity Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Meri's Daily Dashboard</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 0;
       background: #f5f5f5;
+      margin: 0;
+      padding: 0;
     }
-
     .tabs {
       display: flex;
+      justify-content: center;
       background-color: #007bff;
-      overflow-x: auto;
+      flex-wrap: wrap;
     }
-
-    .tab-button {
-      flex: 1;
-      padding: 12px;
-      text-align: center;
+    .tab {
+      padding: 15px 20px;
       color: white;
-      font-weight: bold;
       cursor: pointer;
-      border: none;
-      background: transparent;
     }
-
-    .tab-button.active {
-      background: #0056b3;
+    .tab.active {
+      background-color: #0056b3;
     }
-
-    .tab-content {
-      display: none;
-      padding: 20px;
+    .content {
+      padding: 30px;
+      max-width: 800px;
+      margin: auto;
     }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    h2 {
+    h1 {
       text-align: center;
     }
-
-    .todo-container input[type="text"] {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
+    #currentDate {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 20px;
     }
-
-    .todo-container button {
+    .todo-container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    input, button {
       padding: 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+    }
+    input {
+      border: 1px solid #ccc;
+      width: 100%;
+    }
+    button {
       background: #007bff;
       color: white;
       border: none;
       cursor: pointer;
-      margin-bottom: 20px;
     }
-
-    .date-group {
-      margin-bottom: 15px;
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    li {
       background: #eee;
+      margin: 5px 0;
       padding: 10px;
-      border-radius: 4px;
-    }
-
-    .date-label {
-      font-weight: bold;
-      margin-bottom: 8px;
-      display: block;
-    }
-
-    .todo-item {
+      border-radius: 5px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      background: #e8e8e8;
-      margin-top: 8px;
-      padding: 10px;
-      border-radius: 4px;
-    }
-
-    .todo-text {
-      flex-grow: 1;
-      margin-left: 12px;
-      text-align: left;
+      align-items: center;
       word-break: break-word;
     }
-
-    .todo-left {
-      display: flex;
-      align-items: center;
+    li span {
+      margin-left: 10px;
+      flex-grow: 1;
+      text-align: left;
     }
-
-    .delete-button {
+    .remove-btn {
       background: red;
       color: white;
       border: none;
-      padding: 6px;
+      padding: 5px 10px;
+      border-radius: 4px;
       cursor: pointer;
-      border-radius: 5px;
-      margin-left: 10px;
     }
-  </style>
-</head>
-<body>
-
-  <div class="tabs">
-    <button class="tab-button active" onclick="showTab('todo')">✅ To-Do List</button>
-    <button class="tab-button" onclick="showTab('time')">⏰ Time Log</button>
-    <button class="tab-button" onclick="showTab('social')">📱 Social Tracker</button>
-    <button class="tab-button" onclick="showTab('hair')">💇 Hair Tracker</button>
-    <button class="tab-button" onclick="showTab('sleep')">😴 Sleep Tracker</button>
-  </div>
-
-  <div id="todo" class="tab-content active">
-    <h2>To-Do List</h2>
-    <div class="todo-container">
-      <input type="text" id="taskInput" placeholder="Add task...">
-      <button onclick="addTask()">Add</button>
-      <div id="todoList"></div>
-    </div>
-  </div>
-
-  <div id="time" class="tab-content">
-    <h2>Time Log</h2>
-    <p style="text-align: center;">Coming soon!</p>
-  </div>
-
-  <div id="social" class="tab-content">
-    <h2>Social Media Tracker</h2>
-    <p style="text-align: center;">Coming soon!</p>
-  </div>
-
-  <div id="hair" class="tab-content">
-    <h2>Hair Playing Tracker</h2>
-    <p style="text-align: center;">Coming soon!</p>
-  </div>
-
-  <div id="sleep" class="tab-content">
-    <h2>Sleep Tracker</h2>
-    <p style="text-align: center;">Coming soon!</p>
-  </div>
-
-  <script>
-    const taskInput = document.getElementById("taskInput");
-    const todoList = document.getElementById("todoList");
-    const today = new Date().toISOString().split('T')[0];
-
-    let tasks = JSON.parse(localStorage.getItem("tasks") || "{}");
-
-    function saveTasks() {
-      localStorage.setItem("tasks", JSON.stringify(tasks));
-    }
-
-    function renderTasks() {
-      todoList.innerHTML = "";
-      Object.keys(tasks).sort().reverse().forEach(date => {
-        const dateGroup = document.createElement("div");
-        dateGroup.className = "date-group";
-
-        const dateLabel = document.createElement("span");
-        dateLabel.className = "date-label";
-        dateLabel.textContent = date;
-        dateGroup.appendChild(dateLabel);
-
-        tasks[date].forEach((task, index) => {
-          const taskEl = document.createElement("div");
-          taskEl.className = "todo-item";
-
-          const left = document.createElement("div");
-          left.className = "todo-left";
-
-          const checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          checkbox.checked = task.done;
-          checkbox.onchange = () => {
-            task.done = checkbox.checked;
-            saveTasks();
-          };
-
-          const taskText = document.createElement("div");
-          taskText.className = "todo-text";
-          taskText.textContent = task.text;
-
-          left.appendChild(checkbox);
-          left.appendChild(taskText);
-
-          const deleteBtn = document.createElement("button");
-          deleteBtn.textContent = "🗑";
-          deleteBtn.className = "delete-button";
-          deleteBtn.onclick = () => {
-            tasks[date].splice(index, 1);
-            if (tasks[date].length === 0) delete tasks[date];
-            saveTasks();
-            renderTasks();
-          };
-
-          taskEl.appendChild(left);
-          taskEl.appendChild(deleteBtn);
-
-          dateGroup.appendChild(taskEl);
-        });
-
-        todoList.appendChild(dateGroup);
-      });
-    }
-
-    function addTask() {
-      const value = taskInput.value.trim();
-      if (!value) return;
-      if (!tasks[today]) tasks[today] = [];
-      tasks[today].push({ text: value, done: false });
-      saveTasks();
-      taskInput.value = "";
-      renderTasks();
-    }
-
-    function showTab(tabId) {
-      document.querySelectorAll(".tab-content").forEach(tab => {
-        tab.classList.remove("active");
-      });
-      document.querySelectorAll(".tab-button").forEach(button => {
-        button.classList.remove("active");
-      });
-      document.getElementById(tabId).classList.add("active");
-      document.querySelector(`.tab-button[onclick="showTab('${tabId}')"]`).classList.add("active");
-    }
-
-    renderTasks();
-  </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Productivity Dashboard</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background: #f5f5f5;
-    }
-
-    .tabs {
-      display: flex;
-      background-color: #007bff;
-      overflow-x: auto;
-    }
-
-    .tab-button {
-      flex: 1;
-      padding: 12px;
-      text-align: center;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-      border: none;
-      background: transparent;
-    }
-
-    .tab-button.active {
-      background: #0056b3;
-    }
-
-    .tab-content {
+    .hidden {
       display: none;
-      padding: 20px;
     }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    h2 {
-      text-align: center;
-    }
-
-    .todo-container input[type="text"] {
+    .accordion {
+      background-color: #f1f1f1;
+      cursor: pointer;
+      padding: 10px;
       width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
-    }
-
-    .todo-container button {
-      padding: 10px;
-      background: #007bff;
-      color: white;
       border: none;
-      cursor: pointer;
-      margin-bottom: 20px;
-    }
-
-    .date-group {
-      margin-bottom: 15px;
-      background: #eee;
-      padding: 10px;
-      border-radius: 4px;
-    }
-
-    .date-label {
-      font-weight: bold;
-      margin-bottom: 8px;
-      display: block;
-    }
-
-    .todo-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #e8e8e8;
-      margin-top: 8px;
-      padding: 10px;
-      border-radius: 4px;
-    }
-
-    .todo-text {
-      flex-grow: 1;
-      margin-left: 12px;
       text-align: left;
-      word-break: break-word;
-    }
-
-    .todo-left {
-      display: flex;
-      align-items: center;
-    }
-
-    .delete-button {
-      background: red;
-      color: white;
-      border: none;
-      padding: 6px;
-      cursor: pointer;
+      outline: none;
+      font-weight: bold;
       border-radius: 5px;
-      margin-left: 10px;
+      margin-top: 10px;
+    }
+    .panel {
+      padding: 0 15px;
+      display: none;
+      overflow: hidden;
+      background-color: white;
+      border-radius: 5px;
+    }
+    #liveTime {
+      text-align: center;
+      font-size: 1.2em;
+      margin-bottom: 15px;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-
   <div class="tabs">
-    <button class="tab-button active" onclick="showTab('todo')">✅ To-Do List</button>
-    <button class="tab-button" onclick="showTab('time')">⏰ Time Log</button>
-    <button class="tab-button" onclick="showTab('social')">📱 Social Tracker</button>
-    <button class="tab-button" onclick="showTab('hair')">💇 Hair Tracker</button>
-    <button class="tab-button" onclick="showTab('sleep')">😴 Sleep Tracker</button>
+    <div class="tab active" onclick="switchTab('todo')">✅ To-Do List</div>
+    <div class="tab" onclick="switchTab('timelog')">⏱️ Time Log</div>
+    <div class="tab" onclick="switchTab('social')">📱 Social Tracker</div>
+    <div class="tab" onclick="switchTab('hair')">💇 Hair Tracker</div>
+    <div class="tab" onclick="switchTab('sleep')">💤 Sleep Tracker</div>
   </div>
 
-  <div id="todo" class="tab-content active">
-    <h2>To-Do List</h2>
-    <div class="todo-container">
+  <div class="content">
+    <div id="currentDate">📅 <span id="dateDisplay"></span></div>
+
+    <div id="todo" class="todo-container">
+      <h1>To-Do List</h1>
       <input type="text" id="taskInput" placeholder="Add task...">
       <button onclick="addTask()">Add</button>
-      <div id="todoList"></div>
+      <div id="todoAccordion"></div>
     </div>
-  </div>
 
-  <div id="time" class="tab-content">
-    <h2>Time Log</h2>
-    <p style="text-align: center;">Coming soon!</p>
-  </div>
+    <div id="timelog" class="todo-container hidden">
+      <h1>Clock-In / Clock-Out</h1>
+      <div id="liveTime"></div>
+      <input type="text" id="activityInput" placeholder="What are you working on?">
+      <button onclick="clockIn()">🟢 Clock In</button>
+      <button onclick="clockOut()">🔴 Clock Out</button>
+      <div id="timelogAccordion"></div>
+    </div>
 
-  <div id="social" class="tab-content">
-    <h2>Social Media Tracker</h2>
-    <p style="text-align: center;">Coming soon!</p>
-  </div>
+    <div id="social" class="todo-container hidden">
+      <h1>Social Media Tracker</h1>
+      <input type="text" id="socialReason" placeholder="Why are you opening it?">
+      <button onclick="logSocial('TikTok')">TikTok</button>
+      <button onclick="logSocial('Instagram')">Instagram</button>
+      <button onclick="logSocial('YouTube')">YouTube</button>
+      <div id="socialAccordion"></div>
+    </div>
 
-  <div id="hair" class="tab-content">
-    <h2>Hair Playing Tracker</h2>
-    <p style="text-align: center;">Coming soon!</p>
-  </div>
+    <div id="hair" class="todo-container hidden">
+      <h1>Hair Playing Tracker</h1>
+      <button onclick="logHair()">😬 I played with my hair</button>
+      <div id="hairAccordion"></div>
+    </div>
 
-  <div id="sleep" class="tab-content">
-    <h2>Sleep Tracker</h2>
-    <p style="text-align: center;">Coming soon!</p>
-  </div>
-
-  <script>
-    const taskInput = document.getElementById("taskInput");
-    const todoList = document.getElementById("todoList");
-    const today = new Date().toISOString().split('T')[0];
-
-    let tasks = JSON.parse(localStorage.getItem("tasks") || "{}");
-
-    function saveTasks() {
-      localStorage.setItem("tasks", JSON.stringify(tasks));
-    }
-
-    function renderTasks() {
-      todoList.innerHTML = "";
-      Object.keys(tasks).sort().reverse().forEach(date => {
-        const dateGroup = document.createElement("div");
-        dateGroup.className = "date-group";
-
-        const dateLabel = document.createElement("span");
-        dateLabel.className = "date-label";
-        dateLabel.textContent = date;
-        dateGroup.appendChild(dateLabel);
-
-        tasks[date].forEach((task, index) => {
-          const taskEl = document.createElement("div");
-          taskEl.className = "todo-item";
-
-          const left = document.createElement("div");
-          left.className = "todo-left";
-
-          const checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          checkbox.checked = task.done;
-          checkbox.onchange = () => {
-            task.done = checkbox.checked;
-            saveTasks();
-          };
-
-          const taskText = document.createElement("div");
-          taskText.className = "todo-text";
-          taskText.textContent = task.text;
-
-          left.appendChild(checkbox);
-          left.appendChild(taskText);
-
-          const deleteBtn = document.createElement("button");
-          deleteBtn.textContent = "🗑";
-          deleteBtn.className = "delete-button";
-          deleteBtn.onclick = () => {
-            tasks[date].splice(index, 1);
-            if (tasks[date].length === 0) delete tasks[date];
-            saveTasks();
-            renderTasks();
-          };
-
-          taskEl.appendChild(left);
-          taskEl.appendChild(deleteBtn);
-
-          dateGroup.appendChild(taskEl);
-        });
-
-        todoList.appendChild(dateGroup);
-      });
-    }
-
-    function addTask() {
-      const value = taskInput.value.trim();
-      if (!value) return;
-      if (!tasks[today]) tasks[today] = [];
-      tasks[today].push({ text: value, done: false });
-      saveTasks();
-      taskInput.value = "";
-      renderTasks();
-    }
-
-    function showTab(tabId) {
-      document.querySelectorAll(".tab-content").forEach(tab => {
-        tab.classList.remove("active");
-      });
-      document.querySelectorAll(".tab-button").forEach(button => {
-        button.classList.remove("active");
-      });
-      document.getElementById(tabId).classList.add("active");
-      document.querySelector(`.tab-button[onclick="showTab('${tabId}')"]`).classList.add("active");
-    }
-
-    renderTasks();
-  </script>
-</body>
-</html>
+    <div id="sleep
