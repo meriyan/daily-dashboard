@@ -141,13 +141,32 @@
   </div>
   <div class="content">
     <div id="currentDate"></div>
+
     <div id="todo" class="todo-container">
       <h1>To-Do List</h1>
       <input type="text" id="taskInput" placeholder="Write your task..." />
       <button onclick="addTask()">Add</button>
       <div id="dailyTaskSections"></div>
     </div>
+
+    <div id="timelog" class="todo-container hidden">
+      <h1>Time Log</h1>
+      <p>Coming soon!</p>
+    </div>
+    <div id="social" class="todo-container hidden">
+      <h1>Social Tracker</h1>
+      <p>Coming soon!</p>
+    </div>
+    <div id="hair" class="todo-container hidden">
+      <h1>Hair Tracker</h1>
+      <p>Coming soon!</p>
+    </div>
+    <div id="sleep" class="todo-container hidden">
+      <h1>Sleep Tracker</h1>
+      <p>Coming soon!</p>
+    </div>
   </div>
+
   <script>
     const taskInput = document.getElementById("taskInput");
     const dateKey = new Date().toISOString().split("T")[0];
@@ -223,6 +242,28 @@
         details.appendChild(ul);
         container.appendChild(details);
       });
+    }
+
+    function switchTab(tabName) {
+      const tabs = document.querySelectorAll(".tab");
+      tabs.forEach(tab => {
+        tab.classList.toggle("active", tab.textContent.includes(tabNameToLabel(tabName)));
+      });
+      const sections = ["todo", "timelog", "social", "hair", "sleep"];
+      sections.forEach(id => {
+        document.getElementById(id).classList.toggle("hidden", id !== tabName);
+      });
+    }
+
+    function tabNameToLabel(tabName) {
+      switch(tabName) {
+        case "todo": return "To-Do";
+        case "timelog": return "Time";
+        case "social": return "Social";
+        case "hair": return "Hair";
+        case "sleep": return "Sleep";
+        default: return "";
+      }
     }
 
     window.onload = async () => {
