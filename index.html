@@ -159,19 +159,32 @@
 
     <div id="timelog" class="todo-container hidden">
       <h1>Time Log</h1>
-      <p>Coming soon!</p>
+      <input type="time" id="timeStart" />
+      <input type="time" id="timeEnd" />
+      <input type="text" id="activityDesc" placeholder="What did you do?" />
+      <button onclick="addTimeLog()">Save</button>
+      <ul id="timeLogList"></ul>
     </div>
+
     <div id="social" class="todo-container hidden">
       <h1>Social Tracker</h1>
-      <p>Coming soon!</p>
+      <input type="text" id="socialActivity" placeholder="What social app did you use?" />
+      <button onclick="addSocialLog()">Log</button>
+      <ul id="socialList"></ul>
     </div>
+
     <div id="hair" class="todo-container hidden">
       <h1>Hair Tracker</h1>
-      <p>Coming soon!</p>
+      <button onclick="logHairTouch()">I touched my hair</button>
+      <ul id="hairLogList"></ul>
     </div>
+
     <div id="sleep" class="todo-container hidden">
       <h1>Sleep Tracker</h1>
-      <p>Coming soon!</p>
+      <input type="time" id="sleepStart" />
+      <input type="time" id="sleepEnd" />
+      <button onclick="logSleep()">Log Sleep</button>
+      <ul id="sleepLogList"></ul>
     </div>
   </div>
 
@@ -262,6 +275,47 @@
       });
     }
 
+    function addTimeLog() {
+      const start = document.getElementById("timeStart").value;
+      const end = document.getElementById("timeEnd").value;
+      const desc = document.getElementById("activityDesc").value;
+      if (!start || !end || !desc) return;
+
+      const li = document.createElement("li");
+      li.textContent = `${start} - ${end}: ${desc}`;
+      document.getElementById("timeLogList").appendChild(li);
+
+      document.getElementById("timeStart").value = "";
+      document.getElementById("timeEnd").value = "";
+      document.getElementById("activityDesc").value = "";
+    }
+
+    function addSocialLog() {
+      const app = document.getElementById("socialActivity").value.trim();
+      if (!app) return;
+      const li = document.createElement("li");
+      li.textContent = `${new Date().toLocaleTimeString()}: ${app}`;
+      document.getElementById("socialList").appendChild(li);
+      document.getElementById("socialActivity").value = "";
+    }
+
+    function logHairTouch() {
+      const li = document.createElement("li");
+      li.textContent = `Touched at ${new Date().toLocaleTimeString()}`;
+      document.getElementById("hairLogList").appendChild(li);
+    }
+
+    function logSleep() {
+      const start = document.getElementById("sleepStart").value;
+      const end = document.getElementById("sleepEnd").value;
+      if (!start || !end) return;
+      const li = document.createElement("li");
+      li.textContent = `Slept from ${start} to ${end}`;
+      document.getElementById("sleepLogList").appendChild(li);
+      document.getElementById("sleepStart").value = "";
+      document.getElementById("sleepEnd").value = "";
+    }
+
     window.onload = async () => {
       const tasks = await getStoredTasks();
       renderTasks(tasks);
@@ -274,4 +328,3 @@
   </script>
 </body>
 </html>
-
