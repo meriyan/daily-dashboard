@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Meri’s To-Do’s</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+    .tabs {
+      display: flex;
+      justify-content: center;
+      background-color: #007bff;
+      flex-wrap: wrap;
+    }
+    .tab {
+      padding: 15px 20px;
+      color: white;
+      cursor: pointer;
+    }
+    .tab.active {
+      background-color: #0056b3;
+    }
+    .content {
+      padding: 30px;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+    }
+    #currentDate {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    .todo-container {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+    }
+    input {
+      border: 1px solid #ccc;
+      width: 100%;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    li {
+      background: #eee;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+    }
+    li span {
+      margin-left: 10px;
+      word-break: break-word;
+      text-align: left;
+    }
+    .remove-btn {
+      margin-left: auto;
+      background: red;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .hidden {
+      display: none;
+    }
+    .accordion {
+      background-color: #f1f1f1;
+      cursor: pointer;
+      padding: 10px;
+      width: 100%;
+      border: none;
+      text-align: left;
+      outline: none;
+      font-weight: bold;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+    .panel {
+      padding: 0 15px;
+      display: none;
+      overflow: hidden;
+      background-color: white;
+      border-radius: 5px;
+    }
+    #liveTime {
+      text-align: center;
+      font-size: 1.2em;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('todo')">✅ To-Do List</div>
+    <div class="tab" onclick="switchTab('timelog')">⏱️ Time Log</div>
+    <div class="tab" onclick="switchTab('social')">📱 Social Tracker</div>
+    <div class="tab" onclick="switchTab('hair')">💇 Hair Tracker</div>
+    <div class="tab" onclick="switchTab('sleep')">💤 Sleep Tracker</div>
+  </div>
+
+  <div class="content">
+    <div id="currentDate"></div>
+
+    <div id="todo" class="todo-container">
+      <h1>Meri’s To-Do’s</h1>
+      <input type="text" id="taskInput" placeholder="Add task...">
+      <button onclick="addTask()">Add</button>
+      <div id="todoAccordion"></div>
+    </div>
+
+    <div id="timelog" class="todo-container hidden">
+      <h1>Clock-In / Clock-Out</h1>
+      <div id="liveTime"></div>
+      <input type="text" id="activityInput" placeholder="What are you working on?">
+      <button onclick="clockIn()">🟢 Clock In</button>
+      <button onclick="clockOut()">🔴 Clock Out</button>
+      <div id="timelogAccordion"></div>
+    </div>
+
+    <div id="social" class="todo-container hidden">
+      <h1>Social Media Tracker</h1>
+      <input type="text" id="socialReason" placeholder="Why are you opening it?">
+      <button onclick="logSocial('TikTok')">TikTok</button>
+      <button onclick="logSocial('Instagram')">Instagram</button>
+      <button onclick="logSocial('YouTube')">YouTube</button>
+      <div id="socialAccordion"></div>
+    </div>
+
+    <div id="hair" class="todo-container hidden">
+      <h1>Hair Playing Tracker</h1>
+      <button onclick="logHair()">😬 I played with my hair</button>
+      <div id="hairAccordion"></div>
+    </div>
+
+    <div id="sleep" class="todo-container hidden">
+      <h1>Sleep Tracker</h1>
+      <input type="date" id="sleepDate" />
+      <input type="time" id="sleepTime" placeholder="Sleep Time" />
+      <input type="number" id="sleepHours" placeholder="Hours Slept" min="0" step="0.1" />
+      <button onclick="logSleep()">Log Sleep</button>
+      <div id="sleepAccordion"></div>
+    </div>
+  </div>
+
+  <script>
+    const getToday = () => new Date().toISOString().split("T")[0];
+    document.getElementById("currentDate").textContent = `📅 ${new Date().toLocaleDateString()}`;
+
+    function switchTab(id) {
+      document.querySelectorAll('.todo-container').forEach(d => d.classList.add('hidden'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(id).classList.remove('hidden');
+      document.querySelector(`.tab[onclick="switchTab('${id}')"]`).classList.add('active');
+    }
+
+    function updateLiveTime() {
+      document.getElementById('liveTime').textContent = `🕒 ${new Date().toLocaleTimeString()}`;
+    }
+    setInterval(updateLiveTime, 1000);
+
+    function addToAccordion(containerId, date, text, isCheckbox = false) {
+      const container = document.getElementById(containerId);
+      let section = document.getElementById(`${containerId}-${date}`);
+      if (!section) {
+        const btn = document.createElement("button");
+        btn.className = "accordion";
+        btn.textContent = date;
+        const panel = document.createElement("div");
+        panel.className = "panel";
+        panel.id = `${containerId}-${date}`;
+        btn.onclick = () => {
+          panel.style.display = panel.style.display === "block" ? "none" : "block";
+        };
+        container.appendChild(btn);
+        container.appendChild(panel);
+        section = panel;
+      }
+      const entry = document.createElement("li");
+      if (isCheckbox) {
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        const label = document.createElement("span");
+        label.textContent = text;
+        checkbox.onchange = () => {
+          label.style.textDecoration = checkbox.checked ? "line-through" : "none";
+        };
+        entry.appendChild(checkbox);
+        entry.appendChild(label);
+      } else {
+        const label = document.createElement("span");
+        label.textContent = text;
+        entry.appendChild(label);
+      }
+      const del = document.createElement("button");
+      del.textContent = "🗑️";
+      del.className = "remove-btn";
+      del.onclick = () => entry.remove();
+      entry.appendChild(del);
+      section.appendChild(entry);
+    }
+
+    function addTask() {
+      const task = document.getElementById("taskInput").value.trim();
+      if (!task) return;
+      addToAccordion("todoAccordion", getToday(), task, true);
+      saveLogEntry("todo", getToday(), task);
+      document.getElementById("taskInput").value = "";
+    }
+
+    function clockIn() {
+      const activity = document.getElementById("activityInput").value.trim();
+      if (!activity) return alert("Enter activity");
+      localStorage.setItem("clockIn", JSON.stringify({ activity, time: new Date().toLocaleTimeString() }));
+    }
+
+    function clockOut() {
+      const clockInData = JSON.parse(localStorage.getItem("clockIn"));
+      if (!clockInData) return alert("You haven’t clocked in yet");
+      const endTime = new Date().toLocaleTimeString();
+      const log = `${clockInData.activity} — ${clockInData.time} to ${endTime}`;
+      addToAccordion("timelogAccordion", getToday(), log);
+      localStorage.removeItem("clockIn");
+      saveLogEntry("timelog", getToday(), log);
+    }
+
+    function logSocial(platform) {
+      const reason = document.getElementById("socialReason").value.trim() || "No reason";
+      const time = new Date().toLocaleTimeString();
+      const log = `${platform} ➜ ${time} (${reason})`;
+      addToAccordion("socialAccordion", getToday(), log);
+      saveLogEntry("social", getToday(), log);
+      document.getElementById("socialReason").value = "";
+    }
+
+    function logHair() {
+      const log = `😬 Hair played — ${new Date().toLocaleTimeString()}`;
+      addToAccordion("hairAccordion", getToday(), log);
+      saveLogEntry("hair", getToday(), log);
+    }
+
+    function logSleep() {
+      const date = document.getElementById("sleepDate").value;
+      const time = document.getElementById("sleepTime").value;
+      const hours = document.getElementById("sleepHours").value;
+      if (!date || !time || !hours) return alert("Fill all fields");
+      const log = `🛌 Slept at ${time}, ${hours}h`;
+      addToAccordion("sleepAccordion", date, log);
+      saveLogEntry("sleep", date, log);
+    }
+
+    function saveLogEntry(type, date, entry) {
+      const logs = JSON.parse(localStorage.getItem(type)) || {};
+      if (!logs[date]) logs[date] = [];
+      logs[date].push(entry);
+      localStorage.setItem(type, JSON.stringify(logs));
+    }
+
+    function loadLogEntries(type, containerId, isCheckbox = false) {
+      const logs = JSON.parse(localStorage.getItem(type)) || {};
+      for (const date in logs) {
+        logs[date].forEach(entry => addToAccordion(containerId, date, entry, isCheckbox));
+      }
+    }
+
+    loadLogEntries("todo", "todoAccordion", true);
+    loadLogEntries("timelog", "timelogAccordion");
+    loadLogEntries("social", "socialAccordion");
+    loadLogEntries("hair", "hairAccordion");
+    loadLogEntries("sleep", "sleepAccordion");
+  </script>
+</body>
+</html>
