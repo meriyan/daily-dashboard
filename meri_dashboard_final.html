@@ -70,9 +70,13 @@
       border-radius: 5px;
       display: flex;
       align-items: center;
+      gap: 10px;
+    }
+    li input[type="checkbox"] {
+      flex-shrink: 0;
     }
     li span {
-      margin-left: 10px;
+      flex: 1;
       word-break: break-word;
       text-align: left;
     }
@@ -167,7 +171,25 @@
     </div>
   </div>
 
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js"></script>
+
   <script>
+    // Replace with your Firebase config:
+    const firebaseConfig = {
+      apiKey: "YOUR_KEY",
+      authDomain: "YOUR_DOMAIN",
+      databaseURL: "YOUR_DB_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_BUCKET",
+      messagingSenderId: "YOUR_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
     const getToday = () => new Date().toISOString().split("T")[0];
     document.getElementById("currentDate").textContent = `📅 ${new Date().toLocaleDateString()}`;
 
@@ -274,19 +296,22 @@
     }
 
     function saveLogEntry(type, date, entry) {
-      const logs = JSON.parse(localStorage.getItem(type)) || {};
-      if (!logs[date]) logs[date] = [];
-      logs[date].push(entry);
-      localStorage.setItem(type, JSON.stringify(logs));
+      db.ref(`${type}/${date}`).push(entry);
     }
 
     function loadLogEntries(type, containerId, isCheckbox = false) {
-      const logs = JSON.parse(localStorage.getItem(type)) || {};
-      for (const date in logs) {
-        logs[date].forEach(entry => addToAccordion(containerId, date, entry, isCheckbox));
-      }
+      db.ref(type).once('value', snapshot => {
+        const data = snapshot.val() || {};
+        for (const date in data) {
+          for (const key in data[date]) {
+            const entry = data[date][key];
+            addToAccordion(containerId, date, entry, isCheckbox);
+          }
+        }
+      });
     }
 
+    // Load all logs on start
     loadLogEntries("todo", "todoAccordion", true);
     loadLogEntries("timelog", "timelogAccordion");
     loadLogEntries("social", "socialAccordion");
