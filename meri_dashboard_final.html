@@ -199,43 +199,65 @@
 
       const entry = document.createElement("li");
 
-      if (isCheckbox) {
-        const container = document.createElement("div");
-        container.style.display = "flex";
-        container.style.alignItems = "center";
-        container.style.gap = "10px";
-        container.style.flex = "1";
+     if (isCheckbox) {
+  const container = document.createElement("div");
+  container.style.display = "flex";
+  container.style.alignItems = "center";
+  container.style.justifyContent = "space-between";
+  container.style.width = "100%";
+  container.style.gap = "10px";
 
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
+  const left = document.createElement("div");
+  left.style.display = "flex";
+  left.style.alignItems = "center";
+  left.style.gap = "10px";
+  left.style.flex = "1";
 
-        const textSpan = document.createElement("span");
-        textSpan.textContent = text;
-        textSpan.style.wordBreak = "break-word";
-        textSpan.style.flex = "1";
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
 
-        checkbox.onchange = () => {
-          textSpan.style.textDecoration = checkbox.checked ? "line-through" : "none";
-        };
+  const textSpan = document.createElement("span");
+  textSpan.textContent = text;
+  textSpan.style.wordBreak = "break-word";
+  textSpan.style.flex = "1";
 
-        container.appendChild(checkbox);
-        container.appendChild(textSpan);
-        entry.appendChild(container);
-      } else {
-        const container = document.createElement("div");
-        container.style.display = "flex";
-        container.style.alignItems = "center";
-        container.style.justifyContent = "space-between";
-        container.style.width = "100%";
+  checkbox.onchange = () => {
+    textSpan.style.textDecoration = checkbox.checked ? "line-through" : "none";
+  };
 
-        const label = document.createElement("span");
-        label.textContent = text;
-        label.style.wordBreak = "break-word";
-        label.style.flex = "1";
+  left.appendChild(checkbox);
+  left.appendChild(textSpan);
 
-        container.appendChild(label);
-        entry.appendChild(container);
-      }
+  const del = document.createElement("button");
+  del.textContent = "🗑️";
+  del.className = "remove-btn";
+  del.onclick = () => entry.remove();
+
+  container.appendChild(left);
+  container.appendChild(del);
+  entry.appendChild(container);
+} else {
+  const container = document.createElement("div");
+  container.style.display = "flex";
+  container.style.alignItems = "center";
+  container.style.justifyContent = "space-between";
+  container.style.width = "100%";
+
+  const label = document.createElement("span");
+  label.textContent = text;
+  label.style.wordBreak = "break-word";
+  label.style.flex = "1";
+
+  const del = document.createElement("button");
+  del.textContent = "🗑️";
+  del.className = "remove-btn";
+  del.onclick = () => entry.remove();
+
+  container.appendChild(label);
+  container.appendChild(del);
+  entry.appendChild(container);
+}
+
 
       const del = document.createElement("button");
       del.textContent = "🗑️";
