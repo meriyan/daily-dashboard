@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -66,11 +67,8 @@
     li {
       background: #eee;
       margin: 5px 0;
-      padding: 10px;
       border-radius: 5px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      display: block;
     }
     .remove-btn {
       margin-left: auto;
@@ -198,74 +196,53 @@
       }
 
       const entry = document.createElement("li");
+      entry.style.padding = "0";
 
-     if (isCheckbox) {
-  const container = document.createElement("div");
-  container.style.display = "flex";
-  container.style.alignItems = "center";
-  container.style.justifyContent = "space-between";
-  container.style.width = "100%";
-  container.style.gap = "10px";
+      const containerDiv = document.createElement("div");
+      containerDiv.style.display = "flex";
+      containerDiv.style.alignItems = "center";
+      containerDiv.style.justifyContent = "space-between";
+      containerDiv.style.gap = "10px";
+      containerDiv.style.width = "100%";
 
-  const left = document.createElement("div");
-  left.style.display = "flex";
-  left.style.alignItems = "center";
-  left.style.gap = "10px";
-  left.style.flex = "1";
+      if (isCheckbox) {
+        const left = document.createElement("div");
+        left.style.display = "flex";
+        left.style.alignItems = "center";
+        left.style.gap = "10px";
+        left.style.flex = "1";
 
-  const checkbox = document.createElement("input");
-  checkbox.type = "checkbox";
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
 
-  const textSpan = document.createElement("span");
-  textSpan.textContent = text;
-  textSpan.style.wordBreak = "break-word";
-  textSpan.style.flex = "1";
+        const textSpan = document.createElement("span");
+        textSpan.textContent = text;
+        textSpan.style.wordBreak = "break-word";
+        textSpan.style.whiteSpace = "pre-wrap";
+        textSpan.style.flex = "1";
 
-  checkbox.onchange = () => {
-    textSpan.style.textDecoration = checkbox.checked ? "line-through" : "none";
-  };
+        checkbox.onchange = () => {
+          textSpan.style.textDecoration = checkbox.checked ? "line-through" : "none";
+        };
 
-  left.appendChild(checkbox);
-  left.appendChild(textSpan);
-
-  const del = document.createElement("button");
-  del.textContent = "🗑️";
-  del.className = "remove-btn";
-  del.onclick = () => entry.remove();
-
-  container.appendChild(left);
-  container.appendChild(del);
-  entry.appendChild(container);
-} else {
-  const container = document.createElement("div");
-  container.style.display = "flex";
-  container.style.alignItems = "center";
-  container.style.justifyContent = "space-between";
-  container.style.width = "100%";
-
-  const label = document.createElement("span");
-  label.textContent = text;
-  label.style.wordBreak = "break-word";
-  label.style.flex = "1";
-
-  const del = document.createElement("button");
-  del.textContent = "🗑️";
-  del.className = "remove-btn";
-  del.onclick = () => entry.remove();
-
-  container.appendChild(label);
-  container.appendChild(del);
-  entry.appendChild(container);
-}
-
+        left.appendChild(checkbox);
+        left.appendChild(textSpan);
+        containerDiv.appendChild(left);
+      } else {
+        const textSpan = document.createElement("span");
+        textSpan.textContent = text;
+        textSpan.style.wordBreak = "break-word";
+        textSpan.style.flex = "1";
+        containerDiv.appendChild(textSpan);
+      }
 
       const del = document.createElement("button");
       del.textContent = "🗑️";
       del.className = "remove-btn";
       del.onclick = () => entry.remove();
+      containerDiv.appendChild(del);
 
-      // Always append delete button to the last element in the entry
-      entry.querySelector("div")?.appendChild(del);
+      entry.appendChild(containerDiv);
       section.appendChild(entry);
     }
 
@@ -313,9 +290,8 @@
       addToAccordion("sleepAccordion", date, log);
     }
 
-    // Load from localStorage (or later from Firebase)
     function loadLogEntries() {
-      // Placeholder for future use
+      // Placeholder for future sync or Firebase
     }
 
     loadLogEntries();
