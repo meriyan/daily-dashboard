@@ -72,14 +72,6 @@
       align-items: center;
       gap: 10px;
     }
-    li input[type="checkbox"] {
-      flex-shrink: 0;
-    }
-   li span {
-  text-align: left;
-  font-size: 1em;
-  line-height: 1.4;
-}
     .remove-btn {
       margin-left: auto;
       background: red;
@@ -171,25 +163,7 @@
     </div>
   </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-database.js"></script>
-
   <script>
-    // Replace with your Firebase config:
-    const firebaseConfig = {
-      apiKey: "YOUR_KEY",
-      authDomain: "YOUR_DOMAIN",
-      databaseURL: "YOUR_DB_URL",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_BUCKET",
-      messagingSenderId: "YOUR_ID",
-      appId: "YOUR_APP_ID"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
     const getToday = () => new Date().toISOString().split("T")[0];
     document.getElementById("currentDate").textContent = `📅 ${new Date().toLocaleDateString()}`;
 
@@ -222,27 +196,54 @@
         container.appendChild(panel);
         section = panel;
       }
+
       const entry = document.createElement("li");
+
       if (isCheckbox) {
+        const container = document.createElement("div");
+        container.style.display = "flex";
+        container.style.alignItems = "center";
+        container.style.gap = "10px";
+        container.style.flex = "1";
+
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
-        const label = document.createElement("span");
-        label.textContent = text;
+
+        const textSpan = document.createElement("span");
+        textSpan.textContent = text;
+        textSpan.style.wordBreak = "break-word";
+        textSpan.style.flex = "1";
+
         checkbox.onchange = () => {
-          label.style.textDecoration = checkbox.checked ? "line-through" : "none";
+          textSpan.style.textDecoration = checkbox.checked ? "line-through" : "none";
         };
-        entry.appendChild(checkbox);
-        entry.appendChild(label);
+
+        container.appendChild(checkbox);
+        container.appendChild(textSpan);
+        entry.appendChild(container);
       } else {
+        const container = document.createElement("div");
+        container.style.display = "flex";
+        container.style.alignItems = "center";
+        container.style.justifyContent = "space-between";
+        container.style.width = "100%";
+
         const label = document.createElement("span");
         label.textContent = text;
-        entry.appendChild(label);
+        label.style.wordBreak = "break-word";
+        label.style.flex = "1";
+
+        container.appendChild(label);
+        entry.appendChild(container);
       }
+
       const del = document.createElement("button");
       del.textContent = "🗑️";
       del.className = "remove-btn";
       del.onclick = () => entry.remove();
-      entry.appendChild(del);
+
+      // Always append delete button to the last element in the entry
+      entry.querySelector("div")?.appendChild(del);
       section.appendChild(entry);
     }
 
@@ -250,7 +251,6 @@
       const task = document.getElementById("taskInput").value.trim();
       if (!task) return;
       addToAccordion("todoAccordion", getToday(), task, true);
-      saveLogEntry("todo", getToday(), task);
       document.getElementById("taskInput").value = "";
     }
 
@@ -267,7 +267,6 @@
       const log = `${clockInData.activity} — ${clockInData.time} to ${endTime}`;
       addToAccordion("timelogAccordion", getToday(), log);
       localStorage.removeItem("clockIn");
-      saveLogEntry("timelog", getToday(), log);
     }
 
     function logSocial(platform) {
@@ -275,14 +274,12 @@
       const time = new Date().toLocaleTimeString();
       const log = `${platform} ➜ ${time} (${reason})`;
       addToAccordion("socialAccordion", getToday(), log);
-      saveLogEntry("social", getToday(), log);
       document.getElementById("socialReason").value = "";
     }
 
     function logHair() {
       const log = `😬 Hair played — ${new Date().toLocaleTimeString()}`;
       addToAccordion("hairAccordion", getToday(), log);
-      saveLogEntry("hair", getToday(), log);
     }
 
     function logSleep() {
@@ -292,31 +289,14 @@
       if (!date || !time || !hours) return alert("Fill all fields");
       const log = `🛌 Slept at ${time}, ${hours}h`;
       addToAccordion("sleepAccordion", date, log);
-      saveLogEntry("sleep", date, log);
     }
 
-    function saveLogEntry(type, date, entry) {
-      db.ref(`${type}/${date}`).push(entry);
+    // Load from localStorage (or later from Firebase)
+    function loadLogEntries() {
+      // Placeholder for future use
     }
 
-    function loadLogEntries(type, containerId, isCheckbox = false) {
-      db.ref(type).once('value', snapshot => {
-        const data = snapshot.val() || {};
-        for (const date in data) {
-          for (const key in data[date]) {
-            const entry = data[date][key];
-            addToAccordion(containerId, date, entry, isCheckbox);
-          }
-        }
-      });
-    }
-
-    // Load all logs on start
-    loadLogEntries("todo", "todoAccordion", true);
-    loadLogEntries("timelog", "timelogAccordion");
-    loadLogEntries("social", "socialAccordion");
-    loadLogEntries("hair", "hairAccordion");
-    loadLogEntries("sleep", "sleepAccordion");
+    loadLogEntries();
   </script>
 </body>
 </html>
